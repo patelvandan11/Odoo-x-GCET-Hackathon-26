@@ -129,9 +129,7 @@ Odoo-x-GCET-Hackathon-26/
 │   └── dayflow-architecture.png     # System architecture diagram
 │
 └── README.md                        # Main project README
-
-
-
+```
 ---
 
 ## 🔄 Backend Status
