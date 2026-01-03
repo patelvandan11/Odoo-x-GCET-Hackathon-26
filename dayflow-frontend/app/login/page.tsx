@@ -2,15 +2,53 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loginId, setLoginId] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // call backend API for authentication
-    console.log('Logging in', { email, password });
+    setError("");
+    setLoading(true);
+
+    try {
+      // Trim whitespace from inputs
+      const trimmedLoginId = loginId.trim();
+      const trimmedPassword = password.trim();
+      
+      if (!trimmedLoginId || !trimmedPassword) {
+        setError("Login ID and password are required");
+        setLoading(false);
+        return;
+      }
+      
+      const data = await api.login(trimmedLoginId, trimmedPassword);
+
+      // Store login_id and role (simple frontend auth)
+      localStorage.setItem("login_id", data.login_id);
+      localStorage.setItem("user_role", data.role);
+
+      if (data.must_change_password) {
+        router.push("/profile/security");
+      } else {
+        // Redirect based on role
+        if (data.role === "hr") {
+          router.push("/hr-dashboard");
+        } else {
+          router.push("/");
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -22,32 +60,37 @@ export default function LoginPage() {
               <span className="text-white font-bold text-2xl">D</span>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-slate-800">Welcome back</h2>
+          <h2 className="text-3xl font-bold text-slate-800">Sign in Page</h2>
           <p className="mt-2 text-sm text-slate-600">Sign in to your DayFlow account</p>
         </div>
         
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
-                Email address
+              <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 mb-2">
+                Login Id/Email :-
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                id="loginId"
+                name="loginId"
+                type="text"
+                autoComplete="username"
+                value={loginId}
+                onChange={e => setLoginId(e.target.value)}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                placeholder="you@example.com"
+                placeholder="Enter your login ID or email"
                 required
               />
             </div>
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
-                Password
+                Password :-
               </label>
               <input
                 id="password"
@@ -62,30 +105,12 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600">
-                  Remember me
-                </label>
-              </div>
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot password?
-                </a>
-              </div>
-            </div>
-
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-[1.02]"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed uppercase"
             >
-              Sign in
+              {loading ? "Signing in..." : "SIGN IN"}
             </button>
           </form>
 
@@ -95,16 +120,19 @@ export default function LoginPage() {
                 <div className="w-full border-t border-slate-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-slate-500">Don't have an account?</span>
+                <span className="px-2 bg-white text-slate-500">Don't have an Account?</span>
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 text-center">
               <Link
                 href="/signup"
-                className="w-full flex justify-center py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors flex items-center justify-center gap-1"
               >
-                Create new account
+                Sign Up
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
           </div>

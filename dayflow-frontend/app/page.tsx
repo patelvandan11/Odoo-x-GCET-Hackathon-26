@@ -1,5 +1,9 @@
 // app/page.tsx (Employee Dashboard)
+"use client";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import EmployeeCard from '@/components/EmployeeCard';
+import { api } from '@/lib/api';
 
 const mockEmployees = [
   { name: 'John Doe', status: 'Present' as const },
@@ -12,6 +16,46 @@ const mockEmployees = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    // Check if user is logged in and is employee (not HR)
+    const loginId = localStorage.getItem('login_id');
+    const role = localStorage.getItem('user_role');
+    
+    if (!loginId) {
+      router.push('/home');
+      return;
+    }
+    
+    // If HR, redirect to HR dashboard
+    if (role === 'hr') {
+      router.push('/hr-dashboard');
+      return;
+    }
+
+    // Fetch user name
+    const fetchUserName = async () => {
+      try {
+        const userData = await api.getCurrentUser(loginId);
+        setUserName(userData.name || 'Employee');
+      } catch (error) {
+        console.error('Failed to fetch user name:', error);
+      }
+    };
+
+    fetchUserName();
+  }, [router]);
+
+  // Show loading or nothing while checking
+  const loginId = typeof window !== 'undefined' ? localStorage.getItem('login_id') : null;
+  const role = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null;
+  
+  if (!loginId || role === 'hr') {
+    return null; // Will redirect
+  }
+
   const stats = {
     total: mockEmployees.length,
     present: mockEmployees.filter(e => e.status === 'Present').length,
@@ -23,8 +67,10 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Employee Dashboard</h1>
-        <p className="text-slate-600">Overview of your team's attendance and status</p>
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+          {userName ? `Welcome, ${userName}` : 'Employee Dashboard'}
+        </h1>
+        <p className="text-slate-600">Your personal dashboard - View attendance and manage your profile</p>
       </div>
 
       {/* Stats Cards */}

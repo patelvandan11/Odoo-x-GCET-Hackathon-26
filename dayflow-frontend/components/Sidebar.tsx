@@ -2,22 +2,32 @@
 "use client";
 import { useContext, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AuthContext } from '@/app/context/AuthContext';
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { user } = useContext(AuthContext);
+  const router = useRouter();
+  const { user, loading, logout } = useContext(AuthContext);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const handleSignOut = () => {
+    if (confirm('Are you sure you want to sign out?')) {
+      logout();
+    }
+  };
 
   // Don't show sidebar on login/signup pages
   if (pathname?.startsWith('/login') || pathname?.startsWith('/signup')) {
     return null;
   }
 
+  const userRole = typeof window !== 'undefined' ? localStorage.getItem('user_role') : null;
+  const isHR = userRole === 'hr';
+
   const navItems = [
     {
-      href: '/',
+      href: isHR ? '/hr-dashboard' : '/',
       label: 'Dashboard',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,6 +35,15 @@ export default function Sidebar() {
         </svg>
       ),
     },
+    ...(isHR ? [{
+      href: '/signup',
+      label: 'Create Employee',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      ),
+    }] : []),
     {
       href: '/attendance',
       label: 'Attendance',
@@ -56,7 +75,7 @@ export default function Sidebar() {
 
   const isActive = (href: string) => {
     if (href === '/') {
-      return pathname === '/';
+      return pathname === '/' || pathname === '/hr-dashboard';
     }
     return pathname?.startsWith(href);
   };
@@ -99,7 +118,7 @@ export default function Sidebar() {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-slate-200">
-            <Link href="/" className="flex items-center space-x-3" onClick={() => setIsMobileOpen(false)}>
+            <Link href={isHR ? "/hr-dashboard" : "/"} className="flex items-center space-x-3" onClick={() => setIsMobileOpen(false)}>
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
                 <span className="text-white font-bold text-lg">D</span>
               </div>
@@ -108,17 +127,31 @@ export default function Sidebar() {
           </div>
 
           {/* User Info */}
-          {user && (
+          {user ? (
             <div className="p-4 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
-                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
-                  <p className="text-xs text-slate-600 truncate">{user.job}</p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">{user.name || 'User'}</p>
+                  <p className="text-xs text-slate-600 truncate">
+                    {user.role === 'hr' ? 'HR Manager' : 'Employee'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : !loading && (
+            <div className="p-4 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">U</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 truncate">User</p>
+                  <p className="text-xs text-slate-600 truncate">Loading...</p>
                 </div>
               </div>
             </div>
@@ -149,7 +182,7 @@ export default function Sidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-200">
+          <div className="p-4 border-t border-slate-200 space-y-2">
             <Link
               href="/profile/security"
               onClick={() => setIsMobileOpen(false)}
@@ -160,6 +193,15 @@ export default function Sidebar() {
               </svg>
               <span className="text-sm">Settings</span>
             </Link>
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+            >
+              <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span className="text-sm font-medium">Sign Out</span>
+            </button>
           </div>
         </div>
       </aside>
