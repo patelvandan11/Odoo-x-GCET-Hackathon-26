@@ -79,23 +79,57 @@ Dayflow addresses this by providing a **centralized, role-aware HR platform** fo
 
 ## 📁 Frontend Structure (Simplified)
 
-dayflow-frontend/
+## 📁 Project Structure
+
+```text
+Odoo-x-GCET-Hackathon-26/
 │
-├── app/
-│   ├── login/
-│   ├── signup/                  # Admin creates employee
-│   ├── profile/
-│   │   ├── resume/
-│   │   ├── private-info/
-│   │   ├── salary-info/         # Admin only
-│   │   └── security/            # Change password
-│   ├── attendance/
-│   └── time-off/
+├── Backend/                         # FastAPI backend (in progress)
+│   ├── api/
+│   │   └── auth.py                  # Authentication routes
+│   │
+│   ├── core/
+│   │   └── security.py              # Password hashing & security utils
+│   │
+│   ├── database/
+│   │   └── db.py                    # Database configuration
+│   │
+│   ├── models/
+│   │   └── user.py                  # User model
+│   │
+│   ├── services/
+│   │   └── user_service.py          # Business logic (user-related)
+│   │
+│   ├── utils/
+│   │
+│   ├── dayflow.db                   # SQLite database (development)
+│   └── main.py                      # FastAPI app entry point
 │
-├── components/
-├── context/
-├── lib/
-└── public/
+├── dayflow-frontend/                # Next.js 14 frontend (completed)
+│   ├── app/
+│   │   ├── attendance/
+│   │   ├── context/
+│   │   ├── home/
+│   │   ├── hr-dashboard/
+│   │   ├── login/
+│   │   ├── profile/
+│   │   ├── signup/
+│   │   ├── time-off/
+│   │   │
+│   │   ├── layout.tsx               # Root layout
+│   │   ├── page.tsx                 # Dashboard page
+│   │   └── globals.css
+│   │
+│   ├── components/                  # Reusable UI components
+│   ├── lib/                         # API helpers & utilities
+│   ├── public/
+│   └── README.md                    # Frontend documentation
+│
+├── assets/
+│   └── dayflow-architecture.png     # System architecture diagram
+│
+└── README.md                        # Main project README
+
 
 
 ---
