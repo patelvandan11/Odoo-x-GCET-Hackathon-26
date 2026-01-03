@@ -27,12 +27,7 @@ Dayflow addresses this by providing a **centralized, role-aware HR platform** fo
 
 ## 🧩 System Architecture
 
-Frontend (Next.js 14)
-        ↓ REST APIs
-Backend (FastAPI)
-        ↓
-Database (SQLAlchemy)
-
+![Dayflow HRMS Architecture](./assets/dayflow-architecture.png)
 
 ---
 
