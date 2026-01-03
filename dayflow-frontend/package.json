@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "clean": "node -e \"const fs = require('fs'); const path = require('path'); function rmDir(dir) { if (fs.existsSync(dir)) { fs.readdirSync(dir).forEach(f => { const filePath = path.join(dir, f); if (fs.lstatSync(filePath).isDirectory()) rmDir(filePath); else fs.unlinkSync(filePath); }); fs.rmdirSync(dir); } } rmDir('.next'); rmDir('node_modules/.cache'); console.log('Cache cleared!');\""
   },
   "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "@radix-ui/react-accordion": "^1.2.12",
+    "next": "^14.2.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
